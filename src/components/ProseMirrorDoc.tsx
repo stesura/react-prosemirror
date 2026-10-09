@@ -8,9 +8,11 @@ import React, {
   useContext,
 } from "react";
 
+import { useRenderStore } from "../contexts/RenderStoreContext.js";
+
 import { DocNodeView } from "./nodes/DocNodeView.js";
 
-interface DocNodeViewContextValue {
+export interface DocNodeViewContextValue {
   node: Node;
   getPos: () => number;
   decorations: readonly Decoration[];
@@ -29,6 +31,9 @@ interface Props extends Omit<HTMLProps<HTMLElement>, "as"> {
 export const ProseMirrorDoc = forwardRef<HTMLElement, Props>(
   function ProseMirrorDoc({ as, ...props }, ref) {
     const docProps = useContext(DocNodeViewContext);
-    return <DocNodeView ref={ref} {...props} {...docProps} as={as} />;
+    const store = useRenderStore();
+    return (
+      <DocNodeView ref={ref} {...props} {...(store?.doc ?? docProps)} as={as} />
+    );
   }
 );

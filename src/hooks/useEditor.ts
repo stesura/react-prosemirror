@@ -7,6 +7,7 @@ import { AbstractEditorView } from "../AbstractEditorView.js";
 import { ReactEditorView } from "../ReactEditorView.js";
 import { StaticEditorView } from "../StaticEditorView.js";
 import { EMPTY_STATE } from "../constants.js";
+import { createRenderStore } from "../contexts/RenderStoreContext.js";
 import { beforeInputPlugin } from "../plugins/beforeInputPlugin.js";
 
 import { useClientLayoutEffect } from "./useClientLayoutEffect.js";
@@ -20,6 +21,13 @@ export interface UseEditorOptions extends EditorProps {
   plugins?: readonly Plugin[];
   dispatchTransaction?(this: EditorView, tr: Transaction): void;
   static?: boolean;
+  /**
+   * Keep the editor's state and doc contexts stable across transactions
+   * dispatched synchronously, so that a transaction does not make React scan
+   * every memoised node view. Leave off when transactions carry the `async`
+   * meta.
+   */
+  stableContexts?: boolean;
 }
 
 let didWarnValueDefaultValue = false;
@@ -60,6 +68,7 @@ export function useEditor<T extends HTMLElement = HTMLElement>(
   const defaultState = options.defaultState ?? EMPTY_STATE;
   const [_state, setState] = useState<EditorState>(defaultState);
   const state = options.state ?? _state;
+  const [renderStore] = useState(createRenderStore);
 
   const { handleDOMEvents, registerEventListener, unregisterEventListener } =
     useComponentEventListeners(options.handleDOMEvents);
@@ -81,7 +90,12 @@ export function useEditor<T extends HTMLElement = HTMLElement>(
           if (options.dispatchTransaction) {
             options.dispatchTransaction.call(this, tr);
           }
+
+          if (options.stableContexts) {
+            renderStore.announce();
+          }
         });
+        renderStore.announced = false;
       } else {
         if (!options.state) {
           setState((s) => s.apply(tr));
@@ -92,7 +106,12 @@ export function useEditor<T extends HTMLElement = HTMLElement>(
         }
       }
     },
-    [options.dispatchTransaction, options.state]
+    [
+      options.dispatchTransaction,
+      options.state,
+      options.stableContexts,
+      renderStore,
+    ]
   );
 
   const directEditorProps = {
@@ -154,5 +173,9 @@ export function useEditor<T extends HTMLElement = HTMLElement>(
     [options.static, registerEventListener, unregisterEventListener, view]
   );
 
-  return { editor, state };
+  return {
+    editor,
+    state,
+    renderStore: options.stableContexts ? renderStore : null,
+  };
 }

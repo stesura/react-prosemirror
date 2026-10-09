@@ -1,4 +1,10 @@
-import React, { ComponentType, ReactNode, useMemo, useState } from "react";
+import React, {
+  ComponentType,
+  ReactNode,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   ChildDescriptionsContext,
@@ -10,6 +16,7 @@ import {
   NodeViewContext,
   NodeViewContextValue,
 } from "../contexts/NodeViewContext.js";
+import { RenderStoreContext } from "../contexts/RenderStoreContext.js";
 import { computeDocDeco } from "../decorations/computeDocDeco.js";
 import { viewDecorations } from "../decorations/viewDecorations.js";
 import { UseEditorOptions, useEditor } from "../hooks/useEditor.js";
@@ -52,7 +59,7 @@ function ProseMirrorInner({
 }: Props) {
   const [mount, setMount] = useState<HTMLElement | null>(null);
 
-  const { editor, state } = useEditor(mount, props);
+  const { editor, state, renderStore } = useEditor(mount, props);
 
   const nodeViewConstructors = editor.view.nodeViews;
   const nodeViewContextValue = useMemo<NodeViewContextValue>(() => {
@@ -76,21 +83,40 @@ function ProseMirrorInner({
     [node, decorations, innerDecorations]
   );
 
+  // An announced render keeps the previous context values: the consumers
+  // re-render through the store in this pass anyway. The flag is consumed
+  // here, so that a render the announcement did not cover (a transaction
+  // dispatched from a layout effect, say) changes the contexts again.
+  const contextValuesRef = useRef({ state, doc: docNodeViewContextValue });
+  if (renderStore) {
+    renderStore.state = state;
+    renderStore.doc = docNodeViewContextValue;
+    if (!renderStore.announced) {
+      contextValuesRef.current = { state, doc: docNodeViewContextValue };
+    }
+    renderStore.announced = false;
+  }
+  const contextValues = renderStore
+    ? contextValuesRef.current
+    : { state, doc: docNodeViewContextValue };
+
   return (
     <EditorContext.Provider value={editor}>
-      <EditorStateContext.Provider value={state}>
-        <EditorStateSelectorsProvider>
-          <NodeViewContext.Provider value={nodeViewContextValue}>
-            <ChildDescriptionsContext.Provider
-              value={rootChildDescriptionsContextValue}
-            >
-              <DocNodeViewContext.Provider value={docNodeViewContextValue}>
-                {children}
-              </DocNodeViewContext.Provider>
-            </ChildDescriptionsContext.Provider>
-          </NodeViewContext.Provider>
-        </EditorStateSelectorsProvider>
-      </EditorStateContext.Provider>
+      <RenderStoreContext.Provider value={renderStore}>
+        <EditorStateContext.Provider value={contextValues.state}>
+          <EditorStateSelectorsProvider>
+            <NodeViewContext.Provider value={nodeViewContextValue}>
+              <ChildDescriptionsContext.Provider
+                value={rootChildDescriptionsContextValue}
+              >
+                <DocNodeViewContext.Provider value={contextValues.doc}>
+                  {children}
+                </DocNodeViewContext.Provider>
+              </ChildDescriptionsContext.Provider>
+            </NodeViewContext.Provider>
+          </EditorStateSelectorsProvider>
+        </EditorStateContext.Provider>
+      </RenderStoreContext.Provider>
     </EditorContext.Provider>
   );
 }

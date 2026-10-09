@@ -539,11 +539,27 @@ type ProseMirror = (
       markViews?: {
         [markType: string]: MarkViewConstructor;
       };
+      stableContexts?: boolean;
     }
 ) => JSX.Element;
 ```
 
 Renders the ProseMirror editor.
+
+`stableContexts` (this fork only, default `false`): by default each transaction
+gives `useEditorState` and `ProseMirrorDoc` new context values, and React then
+searches every memoised node view in the document for consumers of those
+contexts, even though none of the node views re-render. In a large document that
+search is a large share of each keystroke. With `stableContexts`, a transaction
+dispatched synchronously keeps the context values the same, and the consumers
+re-render through a subscription in the same commit instead.
+
+It is for synchronous dispatch only. Leave it off if any transaction carries the
+`async` meta (`tr.setMeta("async", true)`, which lets React render the update
+without `flushSync`): the new values are written during render, which is only
+safe when every render commits. A state change that does not come through
+`dispatchTransaction`, such as a new `state` prop from a collaboration step,
+changes the contexts either way.
 
 Example usage:
 
