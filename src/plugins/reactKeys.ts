@@ -1,7 +1,23 @@
 import { Plugin, PluginKey } from "prosemirror-state";
+import {
+  AddNodeMarkStep,
+  AttrStep,
+  DocAttrStep,
+  RemoveNodeMarkStep,
+  Step,
+} from "prosemirror-transform";
 import { Decoration, DecorationSet } from "prosemirror-view";
 
 import { ReactWidgetType, widget } from "../decorations/ReactWidgetType.js";
+
+// These steps keep every node's size, so no node moves, appears or
+// disappears. Mark steps are not among them: they can split text nodes,
+// which then need keys.
+const keepsNodePositions = (step: Step) =>
+  step instanceof AttrStep ||
+  step instanceof DocAttrStep ||
+  step instanceof AddNodeMarkStep ||
+  step instanceof RemoveNodeMarkStep;
 
 export function createNodeKey() {
   const key = Math.floor(Math.random() * 0xffffffffffff).toString(16);
@@ -111,7 +127,10 @@ export function reactKeys() {
           }
         }
 
-        if (!tr.docChanged) {
+        if (
+          !tr.docChanged ||
+          (!meta?.overrides && tr.steps.every(keepsNodePositions))
+        ) {
           return {
             ...value,
             cursorWrapper: next.cursorWrapper,

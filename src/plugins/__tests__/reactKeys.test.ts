@@ -6,13 +6,24 @@ import { reactKeys, reactKeysPluginKey } from "../reactKeys.js";
 
 const schema = new Schema({
   nodes: {
-    doc: { content: "block+" },
-    paragraph: { group: "block", content: "inline*" },
+    doc: { content: "block+", attrs: { version: { default: 0 } } },
+    paragraph: {
+      group: "block",
+      content: "inline*",
+      attrs: { id: { default: null } },
+    },
     list: { group: "block", content: "list_item+" },
     list_item: { content: "inline*" },
     text: { group: "inline" },
   },
+  marks: { strong: {} },
 });
+
+const keysOf = (state: EditorState) => {
+  const keys = reactKeysPluginKey.getState(state);
+  if (!keys) throw new Error("no reactKeys state");
+  return keys;
+};
 
 describe("reactNodeViewPlugin", () => {
   it("should create a unique key for each node", () => {
@@ -74,5 +85,49 @@ describe("reactNodeViewPlugin", () => {
     Array.from(initialPluginState.keyToPos.keys()).forEach((key) => {
       expect(Array.from(nextPluginState.keyToPos.keys())).toContain(key);
     });
+  });
+
+  it("reuses the key tables when only attrs change", () => {
+    const state = EditorState.create({
+      doc: schema.topNodeType.create(null, [
+        schema.nodes.paragraph.create(null, schema.text("Hello")),
+        schema.nodes.paragraph.create(),
+      ]),
+      plugins: [reactKeys()],
+    });
+    const before = keysOf(state);
+
+    const next = state.apply(
+      state.tr
+        .setNodeAttribute(0, "id", "a")
+        .setNodeAttribute(7, "id", "b")
+        .setDocAttribute("version", 1)
+    );
+
+    expect(next.doc.firstChild?.attrs["id"]).toBe("a");
+    expect(keysOf(next).posToKey).toBe(before.posToKey);
+    expect(keysOf(next).keyToPos).toBe(before.keyToPos);
+  });
+
+  it("gives keys to the text nodes a mark step splits off", () => {
+    const state = EditorState.create({
+      doc: schema.topNodeType.create(null, [
+        schema.nodes.paragraph.create(null, schema.text("Hello")),
+      ]),
+      plugins: [reactKeys()],
+    });
+    const before = keysOf(state);
+
+    const next = state.apply(
+      state.tr
+        .setNodeAttribute(0, "id", "a")
+        .addMark(2, 4, schema.marks.strong.create())
+    );
+
+    expect(keysOf(next).posToKey).not.toBe(before.posToKey);
+    expect(before.posToKey.has(2)).toBe(false);
+    expect(keysOf(next).posToKey.has(2)).toBe(true);
+    expect(keysOf(next).posToKey.has(4)).toBe(true);
+    expect(keysOf(next).posToKey.get(0)).toBe(before.posToKey.get(0));
   });
 });
