@@ -1,9 +1,8 @@
 name: demo
 
+# Manual only in the fork: upstream's demo site is the public one.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-demo:

@@ -9,6 +9,24 @@
 
 [![Join the chat at https://gitter.im/nytimes/react-prosemirror](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nytimes/react-prosemirror?utm_source=badge&utm_medium=badge&utm_content=badge)
 
+> **This is `@stesura/react-prosemirror`, a fork of
+> [`@handlewithcare/react-prosemirror`](https://github.com/handlewithcarecollective/react-prosemirror).**
+> Each release is an upstream release plus a few commits for large documents,
+> versioned `<upstream>-stesura.<n>`. What differs from upstream:
+>
+> - Node, mark, text and widget views place their view description among their
+>   siblings with a binary search, instead of re-sorting the whole sibling list
+>   as each one mounts (quadratic in the number of siblings).
+> - The `reactKeys` plugin keeps its key tables for transactions that only
+>   change attributes or node marks, instead of remapping every position.
+> - `<ProseMirror>` takes an opt-in `stableContexts` prop; see
+>   [`ProseMirror`](#prosemirror).
+>
+> The rest of this README is upstream's. Where it imports from
+> `@handlewithcare/react-prosemirror`, import from `@stesura/react-prosemirror`,
+> and do not install both: two copies of the library do not share their React
+> contexts.
+
 ## Installation
 
 _Note_: React ProseMirror releases are coupled to specific prosemirror-view

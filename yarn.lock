@@ -1624,107 +1624,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@handlewithcare/react-prosemirror@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@handlewithcare/react-prosemirror@workspace:."
-  dependencies:
-    "@codemirror/commands": "npm:^6.8.0"
-    "@codemirror/lang-javascript": "npm:^6.2.2"
-    "@codemirror/state": "npm:^6.5.1"
-    "@codemirror/view": "npm:^6.36.2"
-    "@handlewithcare/remark-prosemirror": "npm:^0.1.5"
-    "@jest/globals": "npm:^29.6.2"
-    "@swc/cli": "npm:^0.1.61"
-    "@swc/core": "npm:^1.3.32"
-    "@swc/jest": "npm:^0.2.24"
-    "@testing-library/dom": "npm:^10.4.0"
-    "@testing-library/react": "npm:^16.3.0"
-    "@testing-library/user-event": "npm:^14.6.1"
-    "@tiptap/core": "npm:^3.15.3"
-    "@tiptap/pm": "npm:^3.15.3"
-    "@tiptap/react": "npm:^3.15.3"
-    "@types/css-tree": "npm:^2.3.10"
-    "@types/jest": "npm:^27.0.0"
-    "@types/react": "npm:^18.2.0"
-    "@types/react-dom": "npm:^18.2.0"
-    "@types/react-reconciler": "npm:^0.28.9"
-    "@typescript-eslint/eslint-plugin": "npm:^5.51.0"
-    "@typescript-eslint/parser": "npm:^5.51.0"
-    "@uiw/react-codemirror": "npm:^4.23.7"
-    "@vitejs/plugin-basic-ssl": "npm:^2.3.0"
-    "@vitejs/plugin-react": "npm:^4.3.1"
-    "@wdio/browser-runner": "npm:^9.18.1"
-    "@wdio/cli": "npm:^9.18.1"
-    "@wdio/dot-reporter": "npm:^9.18.0"
-    "@wdio/globals": "npm:^9.17.0"
-    "@wdio/logger": "npm:^9.18.0"
-    "@wdio/mocha-framework": "npm:^9.18.0"
-    "@wdio/spec-reporter": "npm:^9.18.0"
-    "@wdio/types": "npm:^9.16.2"
-    "@yarnpkg/sdks": "npm:^3.0.0-rc.38"
-    classnames: "npm:^2.5.1"
-    concurrently: "npm:^7.6.0"
-    eslint: "npm:^8.33.0"
-    eslint-config-prettier: "npm:^8.6.0"
-    eslint-import-resolver-typescript: "npm:^3.5.3"
-    eslint-plugin-import: "npm:^2.27.5"
-    eslint-plugin-jest: "npm:^27.2.1"
-    eslint-plugin-react: "npm:^7.32.2"
-    eslint-plugin-react-hooks: "npm:^4.6.0"
-    expect: "npm:^29.7.0"
-    expect-webdriverio: "npm:^5.4.0"
-    husky: "npm:^8.0.3"
-    jest: "npm:^29.7.0"
-    jest-environment-jsdom: "npm:^29.7.0"
-    lint-staged: "npm:^13.1.0"
-    markdown-toc: "npm:^1.2.0"
-    mdast-util-gfm-table: "npm:^2.0.0"
-    micromark-extension-gfm-table: "npm:^2.1.1"
-    prettier: "npm:^2.8.3"
-    prosemirror-commands: "npm:^1.7.1"
-    prosemirror-gapcursor: "npm:^1.4.1"
-    prosemirror-history: "npm:^1.5.0"
-    prosemirror-inputrules: "npm:^1.5.1"
-    prosemirror-keymap: "npm:^1.2.3"
-    prosemirror-model: "npm:^1.25.8"
-    prosemirror-schema-list: "npm:^1.5.1"
-    prosemirror-state: "npm:^1.4.4"
-    prosemirror-tables: "npm:^1.8.5"
-    prosemirror-test-builder: "npm:^1.1.1"
-    prosemirror-transform: "npm:^1.12.0"
-    prosemirror-view: "npm:1.42.3"
-    puppeteer-core: "npm:^25.0.4"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
-    react-reconciler: "npm:^0.29.0"
-    remark-parse: "npm:^11.0.0"
-    rimraf: "npm:^3.0.2"
-    tsx: "npm:^4.20.3"
-    typescript: "npm:^6.0.3"
-    unified: "npm:^11.0.5"
-    vite: "npm:^5.4.5"
-    webdriver: "npm:^9.18.0"
-    webdriverio: "npm:^9.18.1"
-  peerDependencies:
-    "@tiptap/core": ^3.0.0
-    "@tiptap/pm": ^3.0.0
-    "@tiptap/react": ^3.0.0
-    prosemirror-model: ^1.0.0
-    prosemirror-state: ^1.0.0
-    prosemirror-view: 1.42.3
-    react: ">=17 <20"
-    react-dom: ">=17 <20"
-    react-reconciler: ">=0.26.1 <=0.33.0"
-  peerDependenciesMeta:
-    "@tiptap/core":
-      optional: true
-    "@tiptap/pm":
-      optional: true
-    "@tiptap/react":
-      optional: true
-  languageName: unknown
-  linkType: soft
-
 "@handlewithcare/remark-prosemirror@npm:^0.1.5":
   version: 0.1.5
   resolution: "@handlewithcare/remark-prosemirror@npm:0.1.5"
@@ -3029,6 +2928,107 @@ __metadata:
   checksum: 10/459cdf3efb976b4fcf54ba0b07feeed942a52e260d33961dc48df1887bd068a0d9565e987c6ee4c9f4a4e7258011eec8b7599cee1b3bc1c08e480cb073525c08
   languageName: node
   linkType: hard
+
+"@stesura/react-prosemirror@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@stesura/react-prosemirror@workspace:."
+  dependencies:
+    "@codemirror/commands": "npm:^6.8.0"
+    "@codemirror/lang-javascript": "npm:^6.2.2"
+    "@codemirror/state": "npm:^6.5.1"
+    "@codemirror/view": "npm:^6.36.2"
+    "@handlewithcare/remark-prosemirror": "npm:^0.1.5"
+    "@jest/globals": "npm:^29.6.2"
+    "@swc/cli": "npm:^0.1.61"
+    "@swc/core": "npm:^1.3.32"
+    "@swc/jest": "npm:^0.2.24"
+    "@testing-library/dom": "npm:^10.4.0"
+    "@testing-library/react": "npm:^16.3.0"
+    "@testing-library/user-event": "npm:^14.6.1"
+    "@tiptap/core": "npm:^3.15.3"
+    "@tiptap/pm": "npm:^3.15.3"
+    "@tiptap/react": "npm:^3.15.3"
+    "@types/css-tree": "npm:^2.3.10"
+    "@types/jest": "npm:^27.0.0"
+    "@types/react": "npm:^18.2.0"
+    "@types/react-dom": "npm:^18.2.0"
+    "@types/react-reconciler": "npm:^0.28.9"
+    "@typescript-eslint/eslint-plugin": "npm:^5.51.0"
+    "@typescript-eslint/parser": "npm:^5.51.0"
+    "@uiw/react-codemirror": "npm:^4.23.7"
+    "@vitejs/plugin-basic-ssl": "npm:^2.3.0"
+    "@vitejs/plugin-react": "npm:^4.3.1"
+    "@wdio/browser-runner": "npm:^9.18.1"
+    "@wdio/cli": "npm:^9.18.1"
+    "@wdio/dot-reporter": "npm:^9.18.0"
+    "@wdio/globals": "npm:^9.17.0"
+    "@wdio/logger": "npm:^9.18.0"
+    "@wdio/mocha-framework": "npm:^9.18.0"
+    "@wdio/spec-reporter": "npm:^9.18.0"
+    "@wdio/types": "npm:^9.16.2"
+    "@yarnpkg/sdks": "npm:^3.0.0-rc.38"
+    classnames: "npm:^2.5.1"
+    concurrently: "npm:^7.6.0"
+    eslint: "npm:^8.33.0"
+    eslint-config-prettier: "npm:^8.6.0"
+    eslint-import-resolver-typescript: "npm:^3.5.3"
+    eslint-plugin-import: "npm:^2.27.5"
+    eslint-plugin-jest: "npm:^27.2.1"
+    eslint-plugin-react: "npm:^7.32.2"
+    eslint-plugin-react-hooks: "npm:^4.6.0"
+    expect: "npm:^29.7.0"
+    expect-webdriverio: "npm:^5.4.0"
+    husky: "npm:^8.0.3"
+    jest: "npm:^29.7.0"
+    jest-environment-jsdom: "npm:^29.7.0"
+    lint-staged: "npm:^13.1.0"
+    markdown-toc: "npm:^1.2.0"
+    mdast-util-gfm-table: "npm:^2.0.0"
+    micromark-extension-gfm-table: "npm:^2.1.1"
+    prettier: "npm:^2.8.3"
+    prosemirror-commands: "npm:^1.7.1"
+    prosemirror-gapcursor: "npm:^1.4.1"
+    prosemirror-history: "npm:^1.5.0"
+    prosemirror-inputrules: "npm:^1.5.1"
+    prosemirror-keymap: "npm:^1.2.3"
+    prosemirror-model: "npm:^1.25.8"
+    prosemirror-schema-list: "npm:^1.5.1"
+    prosemirror-state: "npm:^1.4.4"
+    prosemirror-tables: "npm:^1.8.5"
+    prosemirror-test-builder: "npm:^1.1.1"
+    prosemirror-transform: "npm:^1.12.0"
+    prosemirror-view: "npm:1.42.3"
+    puppeteer-core: "npm:^25.0.4"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    react-reconciler: "npm:^0.29.0"
+    remark-parse: "npm:^11.0.0"
+    rimraf: "npm:^3.0.2"
+    tsx: "npm:^4.20.3"
+    typescript: "npm:^6.0.3"
+    unified: "npm:^11.0.5"
+    vite: "npm:^5.4.5"
+    webdriver: "npm:^9.18.0"
+    webdriverio: "npm:^9.18.1"
+  peerDependencies:
+    "@tiptap/core": ^3.0.0
+    "@tiptap/pm": ^3.0.0
+    "@tiptap/react": ^3.0.0
+    prosemirror-model: ^1.0.0
+    prosemirror-state: ^1.0.0
+    prosemirror-view: 1.42.3
+    react: ">=17 <20"
+    react-dom: ">=17 <20"
+    react-reconciler: ">=0.26.1 <=0.33.0"
+  peerDependenciesMeta:
+    "@tiptap/core":
+      optional: true
+    "@tiptap/pm":
+      optional: true
+    "@tiptap/react":
+      optional: true
+  languageName: unknown
+  linkType: soft
 
 "@swc/cli@npm:^0.1.61":
   version: 0.1.65
