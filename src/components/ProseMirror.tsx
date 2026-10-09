@@ -86,15 +86,27 @@ function ProseMirrorInner({
   // An announced render keeps the previous context values: the consumers
   // re-render through the store in this pass anyway. The flag is consumed
   // here, so that a render the announcement did not cover (a transaction
-  // dispatched from a layout effect, say) changes the contexts again.
+  // dispatched from a layout effect, say) changes the contexts again. Only a
+  // value that differs from the last render's does: a parent re-rendering in
+  // the same pass brings nothing the consumers have not seen.
   const contextValuesRef = useRef({ state, doc: docNodeViewContextValue });
+  const renderedRef = useRef(contextValuesRef.current);
   if (renderStore) {
     renderStore.state = state;
     renderStore.doc = docNodeViewContextValue;
     if (!renderStore.announced) {
-      contextValuesRef.current = { state, doc: docNodeViewContextValue };
+      const rendered = renderedRef.current;
+      const current = contextValuesRef.current;
+      contextValuesRef.current = {
+        state: rendered.state === state ? current.state : state,
+        doc:
+          rendered.doc === docNodeViewContextValue
+            ? current.doc
+            : docNodeViewContextValue,
+      };
     }
     renderStore.announced = false;
+    renderedRef.current = { state, doc: docNodeViewContextValue };
   }
   const contextValues = renderStore
     ? contextValuesRef.current

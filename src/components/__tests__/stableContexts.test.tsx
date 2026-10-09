@@ -173,10 +173,11 @@ for (const stableContexts of [false, true]) {
     // The start of "hello world"'s text.
     const start = 1;
 
-    const mountEditor = (plugins: Plugin[] = []) => {
+    const mountEditor = (plugins: Plugin[] = [], rerenderParent = false) => {
       const captured: {
         view?: EditorView;
         setState?: (state: EditorState) => void;
+        setTick?: (update: (tick: number) => number) => void;
       } = {};
       const CaptureView = () => {
         useEditorEffect((view) => {
@@ -199,6 +200,16 @@ for (const stableContexts of [false, true]) {
         return null;
       };
       const ContextProbe = memo(ContextProbeView);
+      // Re-renders the parent from a layout effect after each state, as a
+      // store the app syncs from the editor would.
+      const RerenderParentView = () => {
+        const editorState = useEditorState();
+        useLayoutEffect(() => {
+          if (rerenderParent) captured.setTick?.((tick) => tick + 1);
+        }, [editorState]);
+        return null;
+      };
+      const RerenderParent = memo(RerenderParentView);
       const Editor = () => {
         const [state, setState] = useState(() =>
           EditorState.create({
@@ -206,7 +217,9 @@ for (const stableContexts of [false, true]) {
             plugins: [reactKeys(), ...plugins],
           })
         );
+        const [, setTick] = useState(0);
         captured.setState = setState;
+        captured.setTick = setTick;
         return (
           <ProseMirror
             state={state}
@@ -217,6 +230,7 @@ for (const stableContexts of [false, true]) {
             <CaptureView />
             <StateText />
             <ContextProbe />
+            <RerenderParent />
           </ProseMirror>
         );
       };
@@ -269,6 +283,22 @@ for (const stableContexts of [false, true]) {
       view.dispatch(view.state.tr.insertText("X", start));
 
       expect(contextRenders.length - before).toBe(stableContexts ? 0 : 1);
+    });
+
+    // The parent's second render in the same pass brings the state the
+    // consumers already have: no reason to change the contexts.
+    it(`${
+      stableContexts ? "keeps" : "changes"
+    } the context values when the parent re-renders in the dispatch`, () => {
+      const { view, contextRenders, container } = mountEditor([], true);
+      const before = contextRenders.length;
+
+      view.dispatch(view.state.tr.insertText("X", start));
+
+      expect(contextRenders.length - before).toBe(stableContexts ? 0 : 1);
+      expect(container.querySelector("output")?.textContent).toBe(
+        "Xhello world"
+      );
     });
 
     // Not announced (a remote step, say): the context path must still render.
