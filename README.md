@@ -22,6 +22,17 @@
 > - `<ProseMirror>` takes an opt-in `stableContexts` prop; see
 >   [`ProseMirror`](#prosemirror).
 >
+> Why a fork: [Stesura](https://stesura.io) edits documents of several hundred
+> pages, where these costs grow with the document. The view-description fix
+> takes a 350-page document's load from 9.1s to 2.5s, and `stableContexts` cuts
+> a keystroke by about 30% on a 2,500-paragraph document. A patch applied at
+> install time only reaches the app that applies it; the packages built on this
+> library need a published version that carries the changes. The first two
+> changes are meant for upstream and leave the fork once upstream releases them.
+> `stableContexts` stays here: it only holds for synchronous dispatch, and
+> upstream also supports transactions dispatched asynchronously as React
+> transitions.
+>
 > The rest of this README is upstream's. Where it imports from
 > `@handlewithcare/react-prosemirror`, import from `@stesura/react-prosemirror`,
 > and do not install both: two copies of the library do not share their React
