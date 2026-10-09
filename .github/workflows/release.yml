@@ -23,11 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Trusted publishing needs npm 11.5.1 or later, which Node 24 ships.
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x
           registry-url: https://registry.npmjs.org
+
+      # npm 12 has npm stage; Node 24's bundled npm may not.
+      - name: Install npm 12
+        run: npm i -g npm@12
 
       - name: Install corepack
         run: npm i -g corepack
@@ -43,10 +46,11 @@ jobs:
             exit 1
           fi
 
-      # Every fork version is a semver prerelease (3.2.11-stesura.1), so the
-      # dist-tag is set explicitly: each one is the current release.
-      - name: Publish to npm
-        run: npm publish --tag latest
+      # The trusted publisher may only stage: a version goes live once it is
+      # approved on npmjs.com with 2FA. Every fork version is a semver
+      # prerelease (3.2.11-stesura.1), so the dist-tag is set explicitly.
+      - name: Stage on npm
+        run: npm stage publish . --tag latest
 
       - name: GitHub release
         uses: softprops/action-gh-release@v2
