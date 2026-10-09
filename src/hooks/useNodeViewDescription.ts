@@ -9,6 +9,7 @@ import {
   NodeViewDesc,
   ReactNodeViewDesc,
   ViewDesc,
+  placeViewDesc,
   sortViewDescs,
 } from "../viewdesc.js";
 
@@ -78,12 +79,7 @@ export function useNodeViewDescription(
       child.parent = viewDesc;
     }
 
-    const siblings = siblingsRef.current;
-
-    if (!siblings.includes(viewDesc)) {
-      siblings.push(viewDesc);
-    }
-    siblings.sort(sortViewDescs);
+    placeViewDesc(siblingsRef.current, viewDesc);
 
     contentDOMRef.current = getContentDOM(nodeView);
 
@@ -178,17 +174,13 @@ export function useNodeViewDescription(
 
     viewDesc.parent = parent;
 
-    if (!siblings.includes(viewDesc)) {
-      siblings.push(viewDesc);
-    }
-
     // In strict/concurrent mode, a node can sometimes re-render
     // entirely on its own, without even its parent re-rendering.
     // In this case, we will have added our view descriptions to
     // our parent's children, but our parent has no opportunity
     // to sort its children, because it never renders. So
-    // we always sort our siblings, too.
-    siblings.sort(sortViewDescs);
+    // we always place ourselves among our siblings, too.
+    placeViewDesc(siblings, viewDesc);
 
     // If a child updates, usually it will re-render and sort
     // our children for us. But it's possible to reorder

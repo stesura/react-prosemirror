@@ -5,7 +5,7 @@ import { Component, MutableRefObject, createRef } from "react";
 import { AbstractEditorView } from "../AbstractEditorView.js";
 import { ReactEditorView } from "../ReactEditorView.js";
 import { findDOMNode } from "../findDOMNode.js";
-import { TextViewDesc, ViewDesc, sortViewDescs } from "../viewdesc.js";
+import { TextViewDesc, ViewDesc, placeViewDesc } from "../viewdesc.js";
 
 import { wrapInDeco } from "./ChildNodeViews.js";
 
@@ -85,8 +85,7 @@ export class TextNodeView extends Component<Props> {
       textNode
     );
 
-    siblingsRef.current.push(viewDesc);
-    siblingsRef.current.sort(sortViewDescs);
+    placeViewDesc(siblingsRef.current, viewDesc);
 
     return viewDesc;
   }

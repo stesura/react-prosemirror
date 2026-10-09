@@ -57,6 +57,34 @@ export function sortViewDescs(a: ViewDesc, b: ViewDesc) {
   return 0;
 }
 
+// Adds `desc` to `siblings` if missing and moves it into sorted order.
+// Every child used to sort the whole sibling list from its own layout
+// effect, which made mounting n siblings O(n²). Only `desc` can be out of
+// place here; the parent's own `children.sort` remains the full pass for
+// siblings that move without re-rendering (reorderSiblings).
+export const placeViewDesc = (siblings: ViewDesc[], desc: ViewDesc) => {
+  let index = siblings.lastIndexOf(desc);
+  if (index === -1) index = siblings.push(desc) - 1;
+  const prev = siblings[index - 1];
+  const next = siblings[index + 1];
+  if (
+    (!prev || sortViewDescs(prev, desc) <= 0) &&
+    (!next || sortViewDescs(desc, next) <= 0)
+  ) {
+    return;
+  }
+  siblings.splice(index, 1);
+  let low = 0;
+  let high = siblings.length;
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    const sibling = siblings[mid];
+    if (sibling && sortViewDescs(sibling, desc) <= 0) low = mid + 1;
+    else high = mid;
+  }
+  siblings.splice(low, 0, desc);
+};
+
 const NOT_DIRTY = 0,
   CHILD_DIRTY = 1,
   CONTENT_DIRTY = 2,
