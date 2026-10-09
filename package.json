@@ -1,6 +1,6 @@
 {
   "name": "@stesura/react-prosemirror",
-  "version": "3.2.11-stesura.0",
+  "version": "3.2.11-stesura.1",
   "license": "MIT",
   "type": "module",
   "main": "dist/cjs/index.js",
