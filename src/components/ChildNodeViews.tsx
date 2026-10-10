@@ -102,9 +102,44 @@ type ChildHack = {
 
 type Child = ChildNode | ChildWidget | ChildNativeWidget | ChildHack;
 
+/**
+ * A child list with the marks each child had when it was rendered. Child
+ * objects are reused across renders while equal, but a widget's marks are
+ * reassigned in place when its neighbours change, so identity alone does
+ * not prove a list is unchanged.
+ */
+type Snapshot = {
+  children: Child[];
+  marks: Array<readonly Mark[]>;
+};
+
+const snapshot = (children: Child[]): Snapshot => ({
+  children,
+  marks: children.map((child) => child.marks),
+});
+
+const sameChildren = (prev: Snapshot, next: Child[]) =>
+  prev.children.length === next.length &&
+  next.every(
+    (child, i) => prev.children[i] === child && prev.marks[i] === child.marks
+  );
+
+/** The previous list when nothing in it changed, so memoised views bail out. */
+const reuseChildren = (
+  ref: { current: Snapshot | null },
+  next: Child[]
+): Child[] => {
+  const prev = ref.current;
+  if (prev && sameChildren(prev, next)) return prev.children;
+  ref.current = snapshot(next);
+  return next;
+};
+
 type SharedMarksProps = {
   getInnerPos: () => number;
   childViews: Child[];
+  /** Marks below this index are rendered by enclosing `MarkView`s. */
+  depth: number;
 };
 
 const ChildView = memo(function ChildView({
@@ -160,9 +195,11 @@ const ChildView = memo(function ChildView({
 const InlinePartition = memo(function InlinePartition({
   childViews,
   getInnerPos,
+  depth,
 }: {
   childViews: [Child, ...Child[]];
   getInnerPos: () => number;
+  depth: number;
 }) {
   const firstChild = childViews[0];
   const firstChildRef = useRef(firstChild);
@@ -172,7 +209,7 @@ const InlinePartition = memo(function InlinePartition({
     return getInnerPos() + firstChildRef.current.offset;
   }, [getInnerPos]);
 
-  const firstMark = firstChild.marks[0];
+  const firstMark = firstChild.marks[depth];
   if (!firstMark) {
     return (
       <>
@@ -194,45 +231,45 @@ const InlinePartition = memo(function InlinePartition({
       <InlineView
         key={firstChild.key}
         getInnerPos={getInnerPos}
-        childViews={childViews.map((child) => ({
-          ...child,
-          marks: child.marks.slice(1),
-        }))}
+        childViews={childViews}
+        depth={depth + 1}
       />
     </MarkView>
   );
 });
 
+const partitionByMark = (childViews: Child[], depth: number) => {
+  const partitions: Array<[Child, ...Child[]]> = [];
+  for (const child of childViews) {
+    const last = partitions[partitions.length - 1];
+    const lastMark = last?.[last.length - 1]?.marks[depth];
+    const mark = child.marks[depth];
+    if (last && (mark ? lastMark && mark.eq(lastMark) : !lastMark)) {
+      last.push(child);
+    } else {
+      partitions.push([child]);
+    }
+  }
+  return partitions;
+};
+
 const InlineView = memo(function InlineView({
   getInnerPos,
   childViews,
+  depth,
 }: SharedMarksProps) {
-  // const editorState = useEditorState();
-  const partitioned = childViews.reduce((acc, child) => {
-    const lastPartition = acc[acc.length - 1];
-    if (!lastPartition) {
-      return [[child]];
-    }
-    const lastChild = lastPartition[lastPartition.length - 1];
-    if (!lastChild) {
-      return [...acc.slice(0, acc.length), [child]];
-    }
-
-    if (
-      (!child.marks.length && !lastChild.marks.length) ||
-      (child.marks.length &&
-        lastChild.marks.length &&
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        child.marks[0]?.eq(lastChild.marks[0]!))
-    ) {
-      return [
-        ...acc.slice(0, acc.length - 1),
-        [...lastPartition.slice(0, lastPartition.length), child],
-      ];
-    }
-
-    return [...acc, [child]];
-  }, [] as Child[][]);
+  // Partitions keep their array identity while their children are unchanged,
+  // so `InlinePartition` only re-renders the run that actually changed.
+  const cache = useRef(new Map<string, Snapshot>());
+  const next = new Map<string, Snapshot>();
+  const partitioned = partitionByMark(childViews, depth).map((partition) => {
+    const ref = { current: cache.current.get(partition[0].key) ?? null };
+    const children = reuseChildren(ref, partition);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    next.set(partition[0].key, ref.current!);
+    return children;
+  });
+  cache.current = next;
 
   return (
     <>
@@ -244,6 +281,7 @@ const InlineView = memo(function InlineView({
             key={firstChild.key}
             childViews={childViews as [Child, ...Child[]]}
             getInnerPos={getInnerPos}
+            depth={depth}
           />
         );
       })}
@@ -306,10 +344,11 @@ function adjustWidgetMarksForward(
 
   const marksToSpread = lastNodeChild.marks;
 
-  widgetChild.marks = widgetChild.marks.reduce(
+  const marks = widgetChild.marks.reduce(
     (acc, mark) => mark.addToSet(acc),
     marksToSpread
   );
+  if (!Mark.sameSet(marks, widgetChild.marks)) widgetChild.marks = marks;
 }
 
 function adjustWidgetMarksBack(
@@ -334,10 +373,11 @@ function adjustWidgetMarksBack(
       continue;
     }
 
-    child.marks = child.marks.reduce(
+    const marks = child.marks.reduce(
       (acc, mark) => mark.addToSet(acc),
       marksToSpread
     );
+    if (!Mark.sameSet(marks, child.marks)) child.marks = marks;
   }
 }
 
@@ -377,6 +417,7 @@ const ChildElement = memo(
           key={child.key}
           childViews={[child]}
           getInnerPos={getInnerPos}
+          depth={0}
         />
       );
     }
@@ -403,6 +444,7 @@ function createChildElements(
         key={children[0]!.key}
         childViews={children}
         getInnerPos={getInnerPos}
+        depth={0}
       />,
     ];
   }
@@ -428,6 +470,8 @@ export const ChildNodeViews = memo(function ChildNodeViews({
   const getInnerPos = useCallback(() => getPos() + 1, [getPos]);
 
   const childMap = useRef(new Map<string, Child>()).current;
+  const hacks = useRef<[ChildHack, ChildHack] | null>(null);
+  const childrenSnapshot = useRef<Snapshot | null>(null);
 
   if (!node) return null;
 
@@ -533,7 +577,7 @@ export const ChildNodeViews = memo(function ChildNodeViews({
     }
   }
 
-  const children = Array.from(childMap.values()).sort(
+  const built = Array.from(childMap.values()).sort(
     // We already ensured that these existed in keysSeen in the previous
     // step
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -541,7 +585,7 @@ export const ChildNodeViews = memo(function ChildNodeViews({
   );
 
   if (node.isTextblock) {
-    const lastChild = children[children.length - 1];
+    const lastChild = built[built.length - 1];
 
     if (
       !lastChild ||
@@ -551,27 +595,33 @@ export const ChildNodeViews = memo(function ChildNodeViews({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       /\n$/.test(lastChild.node.text!)
     ) {
-      children.push(
+      hacks.current ??= [
         {
           type: "hack",
           component: SeparatorHackView,
           marks: [],
-          offset: lastChild?.offset ?? 0,
-          index: (lastChild?.index ?? 0) + 1,
+          offset: 0,
+          index: 0,
           key: "trailing-hack-img",
         },
         {
           type: "hack",
           component: TrailingHackView,
           marks: [],
-          offset: lastChild?.offset ?? 0,
-          index: (lastChild?.index ?? 0) + 2,
+          offset: 0,
+          index: 0,
           key: "trailing-hack-br",
-        }
-      );
+        },
+      ];
+      hacks.current.forEach((hack, i) => {
+        hack.offset = lastChild?.offset ?? 0;
+        hack.index = (lastChild?.index ?? 0) + i + 1;
+      });
+      built.push(...hacks.current);
     }
   }
 
+  const children = reuseChildren(childrenSnapshot, built);
   const childElements = createChildElements(children, getInnerPos);
 
   return <>{childElements}</>;
