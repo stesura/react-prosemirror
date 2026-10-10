@@ -21,17 +21,23 @@
 >   change attributes or node marks, instead of remapping every position.
 > - `<ProseMirror>` takes an opt-in `stableContexts` prop; see
 >   [`ProseMirror`](#prosemirror).
+> - A node view's first render decides `contentEditable` from the schema instead
+>   of a still-null content ref, so mounting a document no longer sets and then
+>   removes the attribute on every block.
+> - `ReactEditorView` detaches the React-rendered children before the base
+>   constructor's attribute changes and reattaches them after, so those changes
+>   don't restyle the whole document.
 >
 > Why a fork: [Stesura](https://stesura.io) edits documents of several hundred
 > pages, where these costs grow with the document. The view-description fix
 > takes a 350-page document's load from 9.1s to 2.5s, and `stableContexts` cuts
 > a keystroke by about 30% on a 2,500-paragraph document. A patch applied at
 > install time only reaches the app that applies it; the packages built on this
-> library need a published version that carries the changes. The first two
-> changes are meant for upstream and leave the fork once upstream releases them.
-> `stableContexts` stays here: it only holds for synchronous dispatch, and
-> upstream also supports transactions dispatched asynchronously as React
-> transitions.
+> library need a published version that carries the changes. All but
+> `stableContexts` are meant for upstream and leave the fork once upstream
+> releases them. `stableContexts` stays here: it only holds for synchronous
+> dispatch, and upstream also supports transactions dispatched asynchronously as
+> React transitions.
 >
 > The rest of this README is upstream's. Where it imports from
 > `@handlewithcare/react-prosemirror`, import from `@stesura/react-prosemirror`,

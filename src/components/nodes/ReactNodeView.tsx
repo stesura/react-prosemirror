@@ -24,6 +24,7 @@ import {
   StopEvent,
   StopEventContext,
 } from "../../contexts/StopEventContext.js";
+import { useClientLayoutEffect } from "../../hooks/useClientLayoutEffect.js";
 import { useForceUpdate } from "../../hooks/useForceUpdate.js";
 import { useNodeViewDescription } from "../../hooks/useNodeViewDescription.js";
 import { useSetDom } from "../../hooks/useSetDom.js";
@@ -168,9 +169,21 @@ export const ReactNodeView = memo(function ReactNodeView({
     [nodeViewDescProps, setContentDOM]
   );
 
+  // Before mount the content ref is still null; guess from the schema so
+  // the first render doesn't set contentEditable=false only to remove it.
+  const hasContentDOM = isMounted()
+    ? contentDOMRef.current !== null
+    : !node.isLeaf;
+
+  // A node with content whose component renders none (an atom with text
+  // content) guessed wrong; one re-render corrects it.
+  useClientLayoutEffect(() => {
+    if ((contentDOMRef.current !== null) !== !node.isLeaf) forceUpdate();
+  }, [forceUpdate, node.isLeaf]);
+
   const props = {
     nodeProps,
-    ...(!contentDOMRef.current &&
+    ...(!hasContentDOM &&
     !nodeProps.node.isText &&
     nodeDOMRef.current?.nodeName !== "BR"
       ? {
@@ -182,7 +195,7 @@ export const ReactNodeView = memo(function ReactNodeView({
       ? { className: "ProseMirror-selectednode" }
       : null),
     ...((!hasCustomSelectNode && selected) ||
-    (!contentDOMRef.current &&
+    (!hasContentDOM &&
       !nodeProps.node.isText &&
       domRef.current?.nodeName !== "BR" &&
       node.type.spec.draggable)

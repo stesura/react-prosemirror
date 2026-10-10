@@ -113,7 +113,10 @@ export class ReactEditorView extends EditorView implements AbstractEditorView {
   constructor(place: { mount: HTMLElement }, props: DirectEditorProps) {
     // Prevent the base class from destroying the React-managed nodes.
     // Restore them below after invoking the base class constructor.
+    // Detached first: every contenteditable change below would otherwise
+    // restyle the whole rendered document.
     const reactContent = [...place.mount.childNodes];
+    place.mount.replaceChildren();
 
     // Prevent the base class from mutating the React-managed attributes.
     // Restore them below after invoking the base class constructor.
@@ -140,15 +143,16 @@ export class ReactEditorView extends EditorView implements AbstractEditorView {
         originalOnSelectionChange();
       };
     } finally {
-      place.mount.replaceChildren(...reactContent);
-
-      for (const attr of place.mount.attributes) {
+      // A copy: removing from the live NamedNodeMap skips every other one.
+      for (const attr of [...place.mount.attributes]) {
         place.mount.removeAttributeNode(attr);
       }
 
       for (const attr of reactAttrs) {
         place.mount.setAttributeNode(attr);
       }
+
+      place.mount.replaceChildren(...reactContent);
     }
 
     this.prevState = EMPTY_STATE;
