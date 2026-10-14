@@ -336,7 +336,10 @@ function adjustWidgetMarksForward(
     !widgetChild ||
     // Using internal Decoration property, "type"
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (widgetChild.widget as any).type.side >= 0
+    (widgetChild.widget as any).type.side >= 0 ||
+    // Explicit marks win, as in adjustWidgetMarksBack.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (widgetChild.widget as any).type.spec.marks
   )
     return;
 

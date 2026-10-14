@@ -656,6 +656,28 @@ describe("Decoration drawing", () => {
     expect(view.dom.querySelector("strong span")).toBeNull();
   });
 
+  it("keeps a side < 0 widget's explicit marks over the text before it", async () => {
+    const { view } = tempEditor({
+      doc: doc(p(em("foo"), "bar")),
+      plugins: [
+        decoPlugin([
+          widget(
+            4,
+            forwardRef<HTMLImageElement, WidgetViewComponentProps>(function Img(
+              { widget, getPos, ...props },
+              ref
+            ) {
+              return <img {...props} ref={ref} />;
+            }),
+            { side: -1, marks: [], key: "img-widget" }
+          ),
+        ]),
+      ],
+    });
+    expect(view.dom.querySelector("img")).not.toBeNull();
+    expect(view.dom.querySelector("em img")).toBeNull();
+  });
+
   it("draws decorations inside node views", async () => {
     const { view } = tempEditor({
       doc: doc(p("foo")),
